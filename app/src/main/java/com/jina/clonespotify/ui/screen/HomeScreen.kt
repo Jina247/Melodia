@@ -25,120 +25,60 @@ import com.jina.clonespotify.utils.coverUrl
 
 
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel
-) {
-    val colorScheme = MaterialTheme.colorScheme
+fun HomeScreen(viewModel: HomeViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    Scaffold(
-        containerColor = colorScheme.background
-    ) { padding ->
-        LazyColumn(
+    Scaffold { paddingValues ->
+
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
         ) {
-            item {
-                // Header with greeting
+            // Search Bar
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { viewModel.updateQuery(it) },
+                onSearch = { viewModel.searchTracks() },
+                isLoading = isLoading
+            )
+
+            // Error message
+            errorMessage?.let { msg ->
+                Text(
+                    text = msg,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            // Loading indicator
+            if (isLoading) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    colorScheme.primary.copy(alpha = 0.3f),
-                                    colorScheme.background
-                                )
-                            )
-                        )
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Good evening",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = colorScheme.onBackground
-                        )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            IconButton(onClick = { }) {
-                                Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
-                                    tint = colorScheme.onBackground
-                                )
-                            }
-                            IconButton(onClick = { }) {
-                                Icon(
-                                    Icons.Default.Settings,
-                                    contentDescription = "Settings",
-                                    tint = colorScheme.onBackground
-                                )
-                            }
-                        }
+                    CircularProgressIndicator()
+                }
+            } else {
+                // Display results
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(searchResults.size) { index ->
+                        TrackCard(track = searchResults[index])
                     }
                 }
-            }
-
-            item {
-                // Quick Access Grid
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(3) { row ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            repeat(2) { col ->
-                                QuickAccessCard(
-                                    title = listOf(
-                                        "Liked Songs", "Daily Mix 1",
-                                        "Chill Vibes", "Your Top Songs 2024",
-                                        "Discover Weekly", "Release Radar"
-                                    )[row * 2 + col],
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                SectionHeader("Recently Played")
-                HorizontalMusicList()
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                SectionHeader("Made For You")
-                HorizontalMusicList(isCircular = true)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                SectionHeader("Popular Albums")
-                HorizontalMusicList()
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
 }
+
 
 @Composable
 fun SectionHeader(title: String) {
@@ -168,7 +108,7 @@ fun SearchBar(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.weight(1f),
-            placeholder = { Text("Search books...") },
+            placeholder = { Text("Search songs...") },
             leadingIcon = { Icon(Icons.Default.Search, null) },
             singleLine = true
         )
@@ -281,61 +221,4 @@ fun TrackCard(track: Track) {
             }
         }
     }
-}
-
-//@Composable
-//fun HorizontalMusicList(isCircular: Boolean = false) {
-//    LazyRow(
-//        horizontalArrangement = Arrangement.spacedBy(12.dp),
-//        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-//    ) {
-//        items(6) { index ->
-//            MusicCard(
-//                title = "Playlist ${index + 1}",
-//                subtitle = "Artist Name • 2024",
-//                isCircular = isCircular
-//            )
-//        }
-//    }
-//}
-//
-//@Composable
-//fun MusicCard(title: String, subtitle: String, isCircular: Boolean = false) {
-//    val colorScheme = MaterialTheme.colorScheme
-//
-//    Column(
-//        modifier = Modifier.width(140.dp),
-//        verticalArrangement = Arrangement.spacedBy(8.dp)
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .size(140.dp)
-//                .clip(if (isCircular) CircleShape else RoundedCornerShape(8.dp))
-//                .background(colorScheme.primary.copy(alpha = 0.2f)),
-//            contentAlignment = Alignment.Center
-//        ) {
-//            Icon(
-//                Icons.Default.Album,
-//                contentDescription = null,
-//                tint = colorScheme.primary,
-//                modifier = Modifier.size(60.dp)
-//            )
-//        }
-//
-//        Text(
-//            text = title,
-//            style = MaterialTheme.typography.bodyMedium,
-//            fontWeight = FontWeight.SemiBold,
-//            color = colorScheme.onBackground,
-//            maxLines = 1
-//        )
-//
-//        Text(
-//            text = subtitle,
-//            style = MaterialTheme.typography.bodySmall,
-//            color = colorScheme.onBackground.copy(alpha = 0.7f),
-//            maxLines = 1,
-//            fontSize = 12.sp
-//        )
-//    }
 }
