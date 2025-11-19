@@ -61,7 +61,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.ui.compose)
     implementation(libs.retrofit)
-    implementation(libs.converter.scalars)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.coil.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.coroutines.android)

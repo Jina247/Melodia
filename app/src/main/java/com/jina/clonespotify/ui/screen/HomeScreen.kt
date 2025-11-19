@@ -14,17 +14,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.jina.clonespotify.data.model.Track
+import com.jina.clonespotify.utils.coverUrl
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: HomeViewModel
+) {
     val colorScheme = MaterialTheme.colorScheme
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Scaffold(
-        bottomBar = { BottomNavigationBar() },
         containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(
@@ -131,50 +141,6 @@ fun HomeScreen() {
 }
 
 @Composable
-fun QuickAccessCard(title: String, modifier: Modifier = Modifier) {
-    val colorScheme = MaterialTheme.colorScheme
-
-    Card(
-        modifier = modifier.height(70.dp),
-        shape = RoundedCornerShape(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface.copy(alpha = 0.9f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(0.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .background(colorScheme.primary.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 12.dp),
-                maxLines = 2
-            )
-        }
-    }
-}
-
-@Composable
 fun SectionHeader(title: String) {
     Text(
         text = title,
@@ -186,111 +152,190 @@ fun SectionHeader(title: String) {
 }
 
 @Composable
-fun HorizontalMusicList(isCircular: Boolean = false) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    isLoading: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(6) { index ->
-            MusicCard(
-                title = "Playlist ${index + 1}",
-                subtitle = "Artist Name • 2024",
-                isCircular = isCircular
-            )
-        }
-    }
-}
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.weight(1f),
+            placeholder = { Text("Search books...") },
+            leadingIcon = { Icon(Icons.Default.Search, null) },
+            singleLine = true
+        )
 
-@Composable
-fun MusicCard(title: String, subtitle: String, isCircular: Boolean = false) {
-    val colorScheme = MaterialTheme.colorScheme
-
-    Column(
-        modifier = Modifier.width(140.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(140.dp)
-                .clip(if (isCircular) CircleShape else RoundedCornerShape(8.dp))
-                .background(colorScheme.primary.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
+        Button(
+            onClick = onSearch,
+            enabled = !isLoading
         ) {
-            Icon(
-                Icons.Default.Album,
-                contentDescription = null,
-                tint = colorScheme.primary,
-                modifier = Modifier.size(60.dp)
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text("Search")
+            }
         }
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = colorScheme.onBackground,
-            maxLines = 1
-        )
-
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodySmall,
-            color = colorScheme.onBackground.copy(alpha = 0.7f),
-            maxLines = 1,
-            fontSize = 12.sp
-        )
     }
 }
 
 @Composable
-fun BottomNavigationBar() {
-    val colorScheme = MaterialTheme.colorScheme
-    var selectedItem by remember { mutableIntStateOf(0) }
-
-    NavigationBar(
-        containerColor = colorScheme.surface,
-        contentColor = colorScheme.onSurface
+fun TrackCard(track: Track) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
-            selected = selectedItem == 0,
-            onClick = { selectedItem = 0 },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = colorScheme.primary,
-                selectedTextColor = colorScheme.primary,
-                indicatorColor = colorScheme.primary.copy(alpha = 0.2f),
-                unselectedIconColor = colorScheme.onSurface.copy(alpha = 0.6f),
-                unselectedTextColor = colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        )
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 70.dp, height = 100.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
 
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            label = { Text("Search") },
-            selected = selectedItem == 1,
-            onClick = { selectedItem = 1 },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = colorScheme.primary,
-                selectedTextColor = colorScheme.primary,
-                indicatorColor = colorScheme.primary.copy(alpha = 0.2f),
-                unselectedIconColor = colorScheme.onSurface.copy(alpha = 0.6f),
-                unselectedTextColor = colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        )
+            ) {
+                if (track.md5Image != null) {
+                    AsyncImage(
+                        model = coverUrl(track.md5Image),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Surface(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                        )
+                    }
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.LibraryMusic, contentDescription = "Library") },
-            label = { Text("Library") },
-            selected = selectedItem == 2,
-            onClick = { selectedItem = 2 },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = colorScheme.primary,
-                selectedTextColor = colorScheme.primary,
-                indicatorColor = colorScheme.primary.copy(alpha = 0.2f),
-                unselectedIconColor = colorScheme.onSurface.copy(alpha = 0.6f),
-                unselectedTextColor = colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = track.artist?.name ?: "N/A",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                track.album?.title?.let { title ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Album,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = title.toString(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
+}
+
+//@Composable
+//fun HorizontalMusicList(isCircular: Boolean = false) {
+//    LazyRow(
+//        horizontalArrangement = Arrangement.spacedBy(12.dp),
+//        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+//    ) {
+//        items(6) { index ->
+//            MusicCard(
+//                title = "Playlist ${index + 1}",
+//                subtitle = "Artist Name • 2024",
+//                isCircular = isCircular
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun MusicCard(title: String, subtitle: String, isCircular: Boolean = false) {
+//    val colorScheme = MaterialTheme.colorScheme
+//
+//    Column(
+//        modifier = Modifier.width(140.dp),
+//        verticalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(140.dp)
+//                .clip(if (isCircular) CircleShape else RoundedCornerShape(8.dp))
+//                .background(colorScheme.primary.copy(alpha = 0.2f)),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Icon(
+//                Icons.Default.Album,
+//                contentDescription = null,
+//                tint = colorScheme.primary,
+//                modifier = Modifier.size(60.dp)
+//            )
+//        }
+//
+//        Text(
+//            text = title,
+//            style = MaterialTheme.typography.bodyMedium,
+//            fontWeight = FontWeight.SemiBold,
+//            color = colorScheme.onBackground,
+//            maxLines = 1
+//        )
+//
+//        Text(
+//            text = subtitle,
+//            style = MaterialTheme.typography.bodySmall,
+//            color = colorScheme.onBackground.copy(alpha = 0.7f),
+//            maxLines = 1,
+//            fontSize = 12.sp
+//        )
+//    }
 }
