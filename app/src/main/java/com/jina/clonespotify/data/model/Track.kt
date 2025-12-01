@@ -1,11 +1,14 @@
 package com.jina.clonespotify.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Track(
     val id: String,
     val title: String,
-    val artist: Artist?,
-    val album: Album?,
-    val previewUrl: String, // for streaming short clip
-    val md5Image: String
+    val artist: String,
+    val releaseTitle: String? = null,
+    val releaseId: String? = null
 )
+
 

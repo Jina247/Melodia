@@ -3,7 +3,7 @@ package com.jina.clonespotify.data.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Artist(
-    val id: String,
-    val name: String
+data class RecordingSearchResponse(
+    val recordings: List<TrackDTO>
 )
+

@@ -50,4 +50,25 @@ class HomeViewModel(
             _isLoading.value = false
         }
     }
+
+    fun loadPopularTracks() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            // Search for popular music
+            repository.searchTracks("pop").fold(
+                onSuccess = { tracks ->
+                    _searchResults.value = tracks
+                    if (tracks.isEmpty()) {
+                        _errorMessage.value = "No tracks found"
+                    }
+                },
+                onFailure = { error ->
+                    _errorMessage.value = "Failed to load tracks: ${error.message}"
+                }
+            )
+            _isLoading.value = false
+        }
+    }
 }

@@ -3,7 +3,9 @@ package com.jina.clonespotify.data.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Artist(
+data class Release(
     val id: String,
-    val name: String
+    val title: String
 )
+
+

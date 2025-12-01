@@ -21,16 +21,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jina.clonespotify.data.remote.RetrofitInstance
 import com.jina.clonespotify.data.repository.TrackRepository
 import com.jina.clonespotify.data.repository.ViewModelFactory
 import com.jina.clonespotify.ui.screen.HomeScreen
 import com.jina.clonespotify.ui.screen.HomeViewModel
 import com.jina.clonespotify.ui.theme.CloneSpotifyTheme
-import retrofit2.Retrofit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
