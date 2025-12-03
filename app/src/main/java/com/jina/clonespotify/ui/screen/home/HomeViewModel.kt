@@ -1,4 +1,4 @@
-package com.jina.clonespotify.ui.screen
+package com.jina.clonespotify.ui.screen.home
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -36,7 +36,7 @@ class HomeViewModel(
             _isLoading.value = true
             _errorMessage.value = null
 
-            repository.searchTracks(_searchQuery.value).fold(
+            repository.searchByMood(_searchQuery.value).fold(
                 onSuccess = { tracks ->
                     _searchResults.value = tracks
                     if (tracks.isEmpty()) {
@@ -57,7 +57,7 @@ class HomeViewModel(
             _errorMessage.value = null
 
             // Search for popular music
-            repository.searchTracks("pop").fold(
+            repository.searchByMood("pop").fold(
                 onSuccess = { tracks ->
                     _searchResults.value = tracks
                     if (tracks.isEmpty()) {

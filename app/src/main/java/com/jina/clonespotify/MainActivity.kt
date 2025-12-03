@@ -25,16 +25,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jina.clonespotify.data.remote.RetrofitInstance
 import com.jina.clonespotify.data.repository.TrackRepository
 import com.jina.clonespotify.data.repository.ViewModelFactory
-import com.jina.clonespotify.ui.screen.HomeScreen
-import com.jina.clonespotify.ui.screen.HomeViewModel
+import com.jina.clonespotify.ui.screen.home.HomeScreen
+import com.jina.clonespotify.ui.screen.home.HomeViewModel
 import com.jina.clonespotify.ui.theme.CloneSpotifyTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val clientId = "260d205c";
+
         val repository = TrackRepository(
-            api = RetrofitInstance.api
+            api = RetrofitInstance.api,
+            clientId
         )
         setContent {
             CloneSpotifyTheme {
