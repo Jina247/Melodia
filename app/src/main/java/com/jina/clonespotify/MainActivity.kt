@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
@@ -20,16 +21,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jina.clonespotify.data.remote.RetrofitInstance
 import com.jina.clonespotify.data.repository.TrackRepository
 import com.jina.clonespotify.data.repository.ViewModelFactory
+import com.jina.clonespotify.navigation.navigateToTrack
+import com.jina.clonespotify.player.MusicPlayer
 import com.jina.clonespotify.ui.screen.home.HomeScreen
 import com.jina.clonespotify.ui.screen.home.HomeViewModel
+import com.jina.clonespotify.ui.screen.songinfo.SongInfoScreen
+import com.jina.clonespotify.ui.screen.songinfo.SongInfoViewModel
 import com.jina.clonespotify.ui.theme.CloneSpotifyTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var musicPlayer: MusicPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -105,11 +118,39 @@ fun BottomNavigationBar() {
 
 @Composable
 fun MusicApp(repository: TrackRepository) {
-    val viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(repository))
-    HomeScreen(viewModel)
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val homeViewModel: HomeViewModel = viewModel(factory = ViewModelFactory(repository))
+    val songInfoViewModel: SongInfoViewModel = viewModel(factory = ViewModelFactory(repository))
+
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") {
+            HomeScreen(
+                homeViewModel,
+                onTrackClick = { track ->
+                    navController.navigateToTrack(track.id)
+                })
+
+        }
+
+        composable(
+            route = "song_info/{trackId}",
+            arguments = listOf(navArgument("trackId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val trackId = backStackEntry.arguments?.getString("trackId") ?: ""
+            val track = repository.getTrackById(trackId) // fetch track from repo
+
+            SongInfoScreen(
+                homeViewMode = homeViewModel,
+                songInfoViewModel = songInfoViewModel,
+                track = track
+            )
+        }
+    }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-}

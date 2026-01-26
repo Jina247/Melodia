@@ -47,7 +47,10 @@ import coil.compose.AsyncImage
 import com.jina.clonespotify.data.model.Track
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    onTrackClick: (Track) -> Unit
+) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -242,7 +245,10 @@ fun SearchBar(
 }
 
 @Composable
-fun TrackCard(track: Track, modifier: Modifier = Modifier) {
+fun TrackCard(
+    track: Track,
+    modifier: Modifier = Modifier
+) {
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
@@ -250,7 +256,8 @@ fun TrackCard(track: Track, modifier: Modifier = Modifier) {
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surface
-        )
+        ),
+        onClick = {}
     ) {
         Row(
             modifier = Modifier
@@ -306,7 +313,7 @@ fun TrackCard(track: Track, modifier: Modifier = Modifier) {
                         tint = colorScheme.primary
                     )
                     Text(
-                        text = track.artist,
+                        text = track.artist.name,
                         style = MaterialTheme.typography.bodyMedium,
                         color = colorScheme.onSurface.copy(alpha = 0.7f),
                         maxLines = 1,

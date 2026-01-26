@@ -8,7 +8,6 @@ class TrackRepository(
     private val api: MusicApi,
     private val clientId: String
 ) {
-
     suspend fun searchByMood(moodTag: String): Result<List<Track>> {
         return try {
             val response = api.searchTracks(
@@ -22,5 +21,9 @@ class TrackRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    fun getTrackById(trackId: String): Track {
+        return
     }
 }
