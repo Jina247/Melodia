@@ -36,7 +36,7 @@ class HomeViewModel(
             _isLoading.value = true
             _errorMessage.value = null
 
-            repository.searchByMood(_searchQuery.value).fold(
+            repository.searchTracks(_searchQuery.value).fold(
                 onSuccess = { tracks ->
                     _searchResults.value = tracks
                     if (tracks.isEmpty()) {
@@ -57,7 +57,7 @@ class HomeViewModel(
             _errorMessage.value = null
 
             // Search for popular music
-            repository.searchByMood("pop").fold(
+            repository.getPopularTracks().fold(
                 onSuccess = { tracks ->
                     _searchResults.value = tracks
                     if (tracks.isEmpty()) {

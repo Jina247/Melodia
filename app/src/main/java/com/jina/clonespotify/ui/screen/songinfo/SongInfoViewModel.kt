@@ -31,4 +31,6 @@ class SongInfoViewModel(
         player.seekTo(newPosition)
     }
 
+    // TODO: remember the position of a playing song, fix time bar, add small bar in homescreen
+
 }

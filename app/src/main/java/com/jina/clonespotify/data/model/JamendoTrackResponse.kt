@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class JamendoTrackResponse(
-    val results: List<TrackDTO>
+    val results: List<TrackDTO >
 )
 

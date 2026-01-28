@@ -1,48 +1,24 @@
 package com.jina.clonespotify.ui.screen.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.jina.clonespotify.data.model.Track
 
@@ -55,101 +31,60 @@ fun HomeScreen(
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
 
-    // Load popular tracks on startup
     LaunchedEffect(Unit) {
         if (searchResults.isEmpty()) {
             viewModel.loadPopularTracks()
         }
     }
 
-    Scaffold(
-        containerColor = colorScheme.background
-    ) { padding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF121212))
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize()
         ) {
+            // Header
             item {
-                // Header with gradient
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    colorScheme.primary.copy(alpha = 0.3f),
-                                    colorScheme.background
-                                )
-                            )
-                        )
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Good evening",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = colorScheme.onBackground
-                        )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            IconButton(onClick = { viewModel.loadPopularTracks() }) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = "Refresh",
-                                    tint = colorScheme.onBackground
-                                )
-                            }
-                            IconButton(onClick = { }) {
-                                Icon(
-                                    Icons.Default.Settings,
-                                    contentDescription = "Settings",
-                                    tint = colorScheme.onBackground
-                                )
-                            }
-                        }
-                    }
-                }
+                SpotifyHeader()
             }
 
+            // Search Bar
             item {
-                // Search Bar
-                SearchBar(
+                SpotifySearchBar(
                     query = searchQuery,
                     onQueryChange = { viewModel.updateQuery(it) },
-                    onSearch = { viewModel.searchTracks() },
-                    isLoading = isLoading
+                    onSearch = { viewModel.searchTracks() }
                 )
             }
 
-            // Error message
+            // Categories
+            item {
+                Text(
+                    text = "Your top mixes",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp
+                    ),
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+                )
+            }
+
+            // Error Message
             errorMessage?.let { msg ->
                 item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = colorScheme.error.copy(alpha = 0.1f)
-                        )
-                    ) {
-                        Text(
-                            text = msg,
-                            modifier = Modifier.padding(16.dp),
-                            color = colorScheme.error
-                        )
-                    }
+                    Text(
+                        text = msg,
+                        color = Color(0xFFFF6B6B),
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
 
-            // Loading indicator
+            // Loading
             if (isLoading) {
                 item {
                     Box(
@@ -158,25 +93,17 @@ fun HomeScreen(
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = colorScheme.primary)
+                        CircularProgressIndicator(color = Color(0xFF1DB954))
                     }
                 }
             }
 
-            // Results section
+            // Tracks Grid
             if (searchResults.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SectionHeader(
-                        title = if (searchQuery.isBlank()) "Popular Tracks" else "Search Results"
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                items(searchResults.size) { index ->
-                    TrackCard(
-                        track = searchResults[index],
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    TrackGrid(
+                        tracks = searchResults,
+                        onTrackClick = onTrackClick
                     )
                 }
             }
@@ -189,88 +116,132 @@ fun HomeScreen(
 }
 
 @Composable
-fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.padding(horizontal = 16.dp)
-    )
-}
-
-@Composable
-fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit,
-    isLoading: Boolean
-) {
+fun SpotifyHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 16.dp, vertical = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            modifier = Modifier.weight(1f),
-            placeholder = { Text("Search songs...") },
-            leadingIcon = { Icon(Icons.Default.Search, null) },
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-            )
+        Text(
+            text = "Good evening",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp
+            ),
+            color = Color.White
         )
 
-        Button(
-            onClick = onSearch,
-            enabled = !isLoading && query.isNotBlank(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            IconButton(onClick = { }) {
+                Icon(
+                    Icons.Default.History,
+                    contentDescription = "History",
+                    tint = Color.White
                 )
-            } else {
-                Text("Search")
+            }
+            IconButton(onClick = { }) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = Color.White
+                )
             }
         }
     }
 }
 
 @Composable
-fun TrackCard(
+fun SpotifySearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        placeholder = { Text("What do you want to listen to?", color = Color.Gray) },
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = onSearch) {
+                    Icon(Icons.Default.Send, contentDescription = "Search", tint = Color(0xFF1DB954))
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFF282828),
+            unfocusedContainerColor = Color(0xFF282828),
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent
+        )
+    )
+}
+
+@Composable
+fun TrackGrid(
+    tracks: List<Track>,
+    onTrackClick: (Track) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        tracks.chunked(2).forEach { rowTracks ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowTracks.forEach { track ->
+                    SpotifyTrackCard(
+                        track = track,
+                        onClick = { onTrackClick(track) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (rowTracks.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun SpotifyTrackCard(
     track: Track,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-
     Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = modifier
+            .height(60.dp)
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface
+            containerColor = Color(0xFF282828)
         ),
-        onClick = {}
+        shape = RoundedCornerShape(4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(width = 70.dp, height = 100.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(colorScheme.primary.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+                    .size(60.dp)
+                    .background(Color(0xFF404040))
             ) {
                 if (track.coverUrl.isNotEmpty()) {
                     AsyncImage(
@@ -283,63 +254,26 @@ fun TrackCard(
                     Icon(
                         Icons.Default.Album,
                         contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = colorScheme.primary
+                        tint = Color(0xFF1DB954),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(30.dp)
                     )
                 }
             }
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = track.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colorScheme.onSurface
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = colorScheme.primary
-                    )
-                    Text(
-                        text = track.artist.name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colorScheme.onSurface.copy(alpha = 0.7f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                track.title.let { title ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Album,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = colorScheme.primary
-                        )
-                        Text(
-                            text = title.toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            }
+            Text(
+                text = track.title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = Color.White,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .weight(1f)
+            )
         }
     }
 }
