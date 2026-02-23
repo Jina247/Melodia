@@ -1,7 +1,10 @@
 package com.jina.clonespotify.data.repository
 
+import com.jina.clonespotify.data.model.Album
+import com.jina.clonespotify.data.model.AlbumDTO
 import com.jina.clonespotify.data.model.PlaylistDTO
 import com.jina.clonespotify.data.model.Track
+import com.jina.clonespotify.data.model.toDomain
 import com.jina.clonespotify.data.model.toTrack
 import com.jina.clonespotify.data.remote.MusicApi
 
@@ -132,6 +135,16 @@ class TrackRepository(
             } else {
                 Result.failure(Exception("Playlist not found"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun loadPopularAlbums(): Result<List<Album>> {
+        return try {
+            val response = api.getPopularAlbums(clientId = clientId)
+            val albums = response.results.map { it.toDomain() }
+            Result.success(albums)
         } catch (e: Exception) {
             Result.failure(e)
         }

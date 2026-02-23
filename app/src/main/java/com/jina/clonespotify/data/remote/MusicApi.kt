@@ -1,5 +1,6 @@
 package com.jina.clonespotify.data.remote
 
+import com.jina.clonespotify.data.model.JamendoAlbumResponse
 import com.jina.clonespotify.data.model.JamendoPlaylistResponse
 import com.jina.clonespotify.data.model.JamendoPlaylistTracksResponse
 import com.jina.clonespotify.data.model.JamendoTrackResponse
@@ -62,6 +63,18 @@ interface MusicApi {
         @Query("format") format: String = "json",
         @Query("imagesize") imageSize: Int = 500
     ): JamendoPlaylistTracksResponse
+
+    @GET("albums")
+    suspend fun getPopularAlbums(
+        @Query("client_id") clientId: String,
+        @Query("order") order: String = "popularity_week",
+        @Query("limit") limit: Int = 50,
+        @Query("name") name: String? = null,
+        @Query("namesearch") search: String? = null,
+        @Query("artist_id") artist_id: List<String>? = null,
+        @Query("artist_name") artist_name: String? = null,
+        @Query("format") format: String = "json"
+    ): JamendoAlbumResponse
 }
 
 object JamendoRetrofitInstance {

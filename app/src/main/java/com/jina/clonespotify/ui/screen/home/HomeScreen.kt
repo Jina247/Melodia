@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,12 +19,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.jina.clonespotify.data.model.AlbumDTO
 import com.jina.clonespotify.data.model.Track
+import com.jina.clonespotify.data.model.HomeScreenItem
+import com.jina.clonespotify.data.model.TrackItem
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onTrackClick: (Track) -> Unit
+    onTrackClick: (HomeScreenItem) -> Unit
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
@@ -111,6 +113,22 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(100.dp))
             }
+
+            item {
+                Text(
+                    text = "Your top albums",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp
+                    ),
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+                )
+            }
+
+            item {
+
+            }
         }
     }
 }
@@ -190,8 +208,8 @@ fun SpotifySearchBar(
 
 @Composable
 fun TrackGrid(
-    tracks: List<Track>,
-    onTrackClick: (Track) -> Unit
+    tracks: List<TrackItem>,
+    onTrackClick: (HomeScreenItem) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -221,7 +239,7 @@ fun TrackGrid(
 
 @Composable
 fun SpotifyTrackCard(
-    track: Track,
+    track: TrackItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -273,6 +291,111 @@ fun SpotifyTrackCard(
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
                     .weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun AlbumGrid(
+    albums: List<AlbumDTO>,
+    onAlbumClick: (AlbumDTO) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        albums.forEach { album ->
+            AlbumCard(
+                album = album,
+                onClick = { onAlbumClick(album) },
+                modifier = Modifier.weight(0.5F)
+            )
+        }
+    }
+}
+
+@Composable
+fun AlbumCard(
+    album: AlbumDTO,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF282828)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Album Cover
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF404040))
+            ) {
+                if (!album.image.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = album.image,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Album,
+                        contentDescription = null,
+                        tint = Color(0xFF1DB954),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(40.dp)
+                    )
+                }
+            }
+
+            // Album Info
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = album.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.White,
+                    maxLines = 2
+                )
+
+                Text(
+                    text = album.artistName ?: "Unknown Artist",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFFB3B3B3)
+                )
+
+                album.releaseDate?.let { date ->
+                    Text(
+                        text = date.take(4), // Just show year
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF808080),
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Color(0xFF808080),
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
     }
